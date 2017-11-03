@@ -1,0 +1,8 @@
+imports:
+  - { resource: vendor/ec-europa/oe-code-review/dist/library-conventions.yml }
+parameters:
+  tasks.phpcs.ignore_patterns:
+    - vendor/
+  tasks.phpmd.exclude:
+    - vendor/
+    - src/Plugin.php
