@@ -1,0 +1,109 @@
+diff --git a/includes/file.inc b/includes/file.inc
+index fa7f5eb547..1ad255ab74 100644
+--- a/includes/file.inc
++++ b/includes/file.inc
+@@ -2130,9 +2130,23 @@ function file_download_access($uri) {
+  *   'filename', and 'name' members corresponding to the matching files.
+  */
+ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
++  // Allow directories specified in settings.php to be ignored. You can use this
++  // to not check for files in common special-purpose directories. For example,
++  // node_modules and bower_components. Ignoring irrelevant directories is a
++  // performance boost.
++  if (!isset($options['nomask'])) {
++    $ignore_directories = variable_get('file_scan_ignore_directories', array(
++      'node_modules',
++      'bower_components',
++    ));
++    array_walk($ignore_directories, function (&$value) {
++      $value = preg_quote($value, '/');
++    });
++    $default_nomask = '/^(\.\.?)|CVS|' . implode('|', $ignore_directories) . '$/';
++  }
++
+   // Merge in defaults.
+   $options += array(
+-    'nomask' => '/(\.\.?|CVS)$/',
+     'callback' => 0,
+     'recurse' => TRUE,
+     'key' => 'uri',
+@@ -2143,7 +2157,10 @@ function file_scan_directory($dir, $mask, $options = array(), $depth = 0) {
+   $files = array();
+   if (is_dir($dir) && $handle = opendir($dir)) {
+     while (FALSE !== ($filename = readdir($handle))) {
+-      if (!preg_match($options['nomask'], $filename) && $filename[0] != '.') {
++      if ($filename[0] != '.'
++          && !(isset($options['nomask']) && preg_match($options['nomask'], $filename))
++          && !(!empty($default_nomask) && preg_match($default_nomask, $filename))
++          ) {
+         $uri = "$dir/$filename";
+         $uri = file_stream_wrapper_uri_normalize($uri);
+         if (is_dir($uri) && $options['recurse']) {
+diff --git a/modules/file/tests/file.test b/modules/file/tests/file.test
+index b3a1424dc5..d3d69220e4 100644
+--- a/modules/file/tests/file.test
++++ b/modules/file/tests/file.test
+@@ -1802,3 +1802,54 @@ class FileFieldAnonymousSubmission extends FileFieldTestCase {
+   }
+ 
+ }
++
++/**
++ * Tests the file_scan_directory() function.
++ */
++class FileScanDirectory extends FileFieldTestCase {
++
++  /**
++   * @var string
++   */
++  protected $path;
++
++  public static function getInfo() {
++    return array(
++      'name' => 'File ScanDirectory',
++      'description' => 'Tests the file_scan_directory() function.',
++      'group' => 'File',
++    );
++  }
++
++  function setUp() {
++    parent::setUp();
++
++    $this->path = 'modules/file/tests/fixtures/file_scan_ignore';
++  }
++
++  /**
++   * Tests file_scan_directory() obeys 'file_scan_ignore_directories' setting.
++   * If nomask is not passed as argument, it should use the default settings.
++   * If nomask is passed as argument, it should obey this rule.
++   */
++  public function testNoMask() {
++    $files = file_scan_directory($this->path, '/\.txt$/');
++    $this->assertEqual(3, count($files), '3 text files found when not ignoring directories.');
++
++    global $conf;
++    $conf['file_scan_ignore_directories'] = array('frontend_framework');
++
++    $files = file_scan_directory($this->path, '/\.txt$/');
++    $this->assertEqual(1, count($files), '1 text files found when ignoring directories called "frontend_framework".');
++
++    // Make that directories specified by default still work when a new nomask is provided.
++    $files = file_scan_directory($this->path, '/\.txt$/', ['nomask' => '/^c.txt/']);
++    $this->assertEqual(2, count($files), '2 text files found when an "nomask" option is passed in.');
++
++    // Ensure that the directories in file_scan_ignore_directories are escaped using preg_quote.
++    $conf['file_scan_ignore_directories'] = array('frontend.*');
++    $files = file_scan_directory($this->path, '/\.txt$/');
++    $this->assertEqual(3, count($files), '2 text files found when ignoring a directory that is not there.');
++  }
++
++}
+diff --git a/modules/file/tests/fixtures/file_scan_ignore/a.txt b/modules/file/tests/fixtures/file_scan_ignore/a.txt
+new file mode 100644
+index 0000000000..e69de29bb2
+diff --git a/modules/file/tests/fixtures/file_scan_ignore/frontend_framework/b.txt b/modules/file/tests/fixtures/file_scan_ignore/frontend_framework/b.txt
+new file mode 100644
+index 0000000000..e69de29bb2
+diff --git a/modules/file/tests/fixtures/file_scan_ignore/frontend_framework/c.txt b/modules/file/tests/fixtures/file_scan_ignore/frontend_framework/c.txt
+new file mode 100644
+index 0000000000..e69de29bb2
