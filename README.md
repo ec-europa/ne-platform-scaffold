@@ -1,54 +1,62 @@
 # NextEuropa Platform Scaffolding
 
-The solution for scaffolding the platform is provided as the custom composer
-install plugin.
-Beneath you can find an extra part that needs to be included in order to setup
-some of the plugin properties.
+Composer plugin that allows to download a specific version of the [NextEuropa platform](https://github.com/ec-europa/platform-dev),
+for development purposes only.
 
-For the moment you can specify following properties:
-  - **version:** a tag of a release that you want to scaffold
-  - **directories: build:** a name of the directory with the build
-  - **artifact: url:** a default URL pattern of the artifact file
-  - **patches:** you can specify the remote patches that should be applied
+## Configuration
+
+Require the project as a development dependency, as in:
+
+```json
+  "require-dev": {
+    "ec-europa/ne-platform-scaffold": "dev-master"
+  }
+```
+
+Include the following configuration in your `composer.json`:
 
 ```
   "extra": {
     "ne-platform-scaffold": {
-      "version": "release tag",
+      "version": "2.3.78",
       "directories": {
-        "build": "build directory name"
+        "build": "build"
       },
       "artifact": {
         "url": "https://github.com/ec-europa/platform-dev/releases/download/{version}/platform-dev-{version}.tar.gz"
       },
       "patches": {
-        "remote patch description": "the patch URL"
+        "My path description": "http://example.com/my.patch"
       }
     }
   }
 ```
 
-# Example of the composer.json
-In order to present the use case of the scaffolding plugin in the project
-you can investigate the structure of the composer.json file attached below.
+Parameters in `ne-platform-scaffold` are explained below:  
+
+- `version`: platform release tag to be downloaded.
+- `directories.build`: build directory name, i.e. platform code will be available here.
+- `artifact.url`: URL artifact pattern, defaults to GitHub location, `{version}` token will be replaced with value in `version`.
+- `patches`: list of patches to be further applied to the platform, once it has been downloaded and extracted in `directories.build`. 
+
+## Example
+
+Below an example of using the NextEuropa Platform Scaffolding when developing a Drupal 7 module:
 
 ```
 {
-  "name": "ec-europa/target",
+  "name": "ec-europa/my-module",
   "type": "drupal-module",
   "license": "EUPL-1.1",
   "minimum-stability": "dev",
   "prefer-stable": true,
-  "require": {
-    "php": ">=5.6"
-  },
   "require-dev": {
-    "ec-europa/ne-platform-scaffold": "*"
+    "ec-europa/ne-platform-scaffold": "dev-master"
   },
   "repositories": [
     {
-      "type": "path",
-      "url": "../ne-platform-scaffold"
+      "type": "git",
+      "url": "https://github.com/ec-europa/ne-platform-scaffold.git"
     }
   ],
   "extra": {
@@ -61,9 +69,6 @@ you can investigate the structure of the composer.json file attached below.
         "url": "https://github.com/ec-europa/platform-dev/releases/download/{version}/platform-dev-{version}.tar.gz"
       }
     }
-  },
-  "scripts": {
-    "grumphp": "./vendor/bin/grumphp run"
   }
 }
 ```
