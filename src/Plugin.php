@@ -11,6 +11,9 @@ use Composer\Script\ScriptEvents;
 
 /**
  * Composer plugin handling Drupal component scaffolding.
+ *
+ * @package NextEuropa\PlatformScaffold
+ * @SuppressWarnings(PHPMD.ShortVariable)
  */
 class Plugin implements PluginInterface, EventSubscriberInterface
 {

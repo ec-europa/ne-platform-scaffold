@@ -16,6 +16,12 @@ use Symfony\Component\Filesystem\Filesystem as SymfonyFilesystem;
 use Symfony\Component\Finder\Finder;
 use Symfony\Component\Process\Process;
 
+/**
+ * Class Handler
+ *
+ * @package NextEuropa\PlatformScaffold
+ * @SuppressWarnings(PHPMD.ShortVariable)
+ */
 class Handler
 {
     const PLATFORM_ARTIFACT_FILENAME = 'artifact.tar.gz';
@@ -60,7 +66,7 @@ class Handler
     /**
      * Handler constructor.
      *
-     * @param Composer $composer
+     * @param Composer    $composer
      * @param IOInterface $io
      */
     public function __construct(Composer $composer, IOInterface $io)
@@ -79,8 +85,7 @@ class Handler
         // Collecting data from the composer package.
         $this->options = $this->getOptions();
 
-        $this->buildPath = dirname($this->composer->getConfig()->get('vendor-dir'))
-            . '/' . $this->options['directories']['build'];
+        $this->buildPath = dirname($this->composer->getConfig()->get('vendor-dir')).'/'.$this->options['directories']['build'];
 
         // Processing the platform artifact.
         $this->downloadPlatformArtifact();
@@ -121,16 +126,16 @@ class Handler
 
         mkdir($this->options['directories']['build'], 0777, true);
 
-        if (file_exists(basename(self::PLATFORM_ARTIFACT_FILENAME, '.tar.gz') . '.zip')) {
-            unlink(basename(self::PLATFORM_ARTIFACT_FILENAME, '.tar.gz') . '.zip');
+        if (file_exists(basename(self::PLATFORM_ARTIFACT_FILENAME, '.tar.gz').'.zip')) {
+            unlink(basename(self::PLATFORM_ARTIFACT_FILENAME, '.tar.gz').'.zip');
         }
 
         $archive = new \PharData(self::PLATFORM_ARTIFACT_FILENAME, \RecursiveDirectoryIterator::SKIP_DOTS);
         $archive->convertToData(\Phar::ZIP);
 
-        $zip = new \ZipArchive;
+        $zip = new \ZipArchive();
 
-        $res = $zip->open(basename(self::PLATFORM_ARTIFACT_FILENAME, '.tar.gz') . '.zip');
+        $res = $zip->open(basename(self::PLATFORM_ARTIFACT_FILENAME, '.tar.gz').'.zip');
 
         if (true === $res) {
             $zip->extractTo($this->options['directories']['build']);
@@ -144,7 +149,7 @@ class Handler
     protected function removeArtifactFiles()
     {
         unlink(self::PLATFORM_ARTIFACT_FILENAME);
-        unlink(basename(self::PLATFORM_ARTIFACT_FILENAME, '.tar.gz') . '.zip');
+        unlink(basename(self::PLATFORM_ARTIFACT_FILENAME, '.tar.gz').'.zip');
     }
 
     /**
@@ -152,7 +157,7 @@ class Handler
      */
     protected function removeDownloadedPatches()
     {
-        foreach (glob($this->buildPath . '/*.patch') as $file) {
+        foreach (glob($this->buildPath.'/*.patch') as $file) {
             unlink($file);
         }
     }
@@ -164,7 +169,7 @@ class Handler
     {
         $finder = new Finder();
         $fs = new SymfonyFilesystem();
-        $finder->files()->in(__DIR__ . '/../patches');
+        $finder->files()->in(__DIR__.'/../patches');
         $this->io->write('<comment>  Applying local patches');
 
         /** @var \SplFileInfo $file */
@@ -172,7 +177,7 @@ class Handler
             $fileName = $file->getFilename();
             // Copying the patch to the build directory.
             $patchPath = $file->getRealPath();
-            $fs->copy($patchPath, $this->buildPath . '/' . $fileName);
+            $fs->copy($patchPath, $this->buildPath.'/'.$fileName);
 
             // Applying the patch.
             $this->io->write("    Applying local patch: $fileName");
@@ -201,7 +206,7 @@ class Handler
 
                 // Downloading the patch.
                 $this->io->write("    Downloading patch: $desc");
-                $patchPath = $this->options['directories']['build'] . '/' . $patchFileName;
+                $patchPath = $this->options['directories']['build'].'/'.$patchFileName;
                 $hostname = parse_url($patchUrl, PHP_URL_HOST);
                 $downloader->copy($hostname, $patchUrl, $patchPath, false);
 
@@ -244,8 +249,8 @@ class Handler
         );
 
         if (!$checked) {
-            $this->io->write('<error>Error while applying a patch: ' . $patchFilename . '</error>');
-            $this->io->write('<comment>' . $this->executor->getErrorOutput() . '</comment>');
+            $this->io->write('<error>Error while applying a patch: '.$patchFilename.'</error>');
+            $this->io->write('<comment>'.$this->executor->getErrorOutput().'</comment>');
         }
 
         if ($checked) {
@@ -294,13 +299,13 @@ class Handler
         $command = call_user_func_array('sprintf', $args);
         $output = '';
         if ($this->io->isVerbose()) {
-            $this->io->write('<comment>' . $command . '</comment>');
+            $this->io->write('<comment>'.$command.'</comment>');
             $io = $this->io;
             $output = function ($type, $data) use ($io) {
                 if (Process::ERR == $type) {
-                    $io->write('<error>' . $data . '</error>');
+                    $io->write('<error>'.$data.'</error>');
                 } else {
-                    $io->write('<comment>' . $data . '</comment>');
+                    $io->write('<comment>'.$data.'</comment>');
                 }
             };
         }

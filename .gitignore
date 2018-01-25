@@ -3,4 +3,3 @@ grumphp.yml
 phpunit.xml
 composer.lock
 .idea
-/.php_cs.cache
