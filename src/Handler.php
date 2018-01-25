@@ -26,7 +26,7 @@ class Handler
 {
     const PLATFORM_ARTIFACT_FILENAME = 'artifact.tar.gz';
     const MODULES_DIRECTORY = '/sites/all/modules';
-    const THEMES_DIRECOTORY = '/sites/all/themes';
+    const THEMES_DIRECTORY = '/sites/all/themes';
 
     /**
      * The build path.
@@ -77,11 +77,11 @@ class Handler
     }
 
     /**
-     * Main method for scaffolding the NE Platform.
+     * Scaffold NextEuropa Platform.
      */
     public function scaffoldPlatform()
     {
-        $this->io->write('<info>Scaffolding the Next Europa platform.</info>');
+        $this->io->write('<info>Scaffolding NextEuropa platform.</info>');
         // Collecting data from the composer package.
         $this->options = $this->getOptions();
 
@@ -97,11 +97,11 @@ class Handler
         $this->downloadAndApplyPatches();
         $this->removeDownloadedPatches();
 
-        $this->io->write('<info>Scaffolding process has been finished.</info>');
+        $this->io->write('<info>Scaffolding process completed.</info>');
     }
 
     /**
-     * Downloads the NE platform artifact from GitHub.
+     * Download NextEuropa Platform artifact.
      */
     public function downloadPlatformArtifact()
     {
@@ -114,7 +114,7 @@ class Handler
     }
 
     /**
-     * Extracts the downloaded artifact of the NE Platform.
+     * Extract downloaded NextEuropa Platform artifact.
      */
     protected function extractPlatformArtifact()
     {
@@ -223,7 +223,7 @@ class Handler
     }
 
     /**
-     * Retrieve data from the optional "extra" configuration.
+     * Retrieve data from optional "extra" configuration.
      *
      * @return array
      */
@@ -235,7 +235,7 @@ class Handler
     }
 
     /**
-     * Apply the patch of a given filename.
+     * Apply given patch.
      *
      * @param string $patchFilename
      *   The patch filename.
@@ -264,10 +264,10 @@ class Handler
     }
 
     /**
-     * Provides an URI for a given version of the artifact file.
+     * Get URI artifact.
      *
      * @return string
-     *   An URI of the NE Platform artifact.
+     *   An URI of the NextEuropa Platform artifact.
      */
     protected function getUri()
     {
@@ -279,7 +279,7 @@ class Handler
     }
 
     /**
-     * Executes a shell command with escaping.
+     * Execute an escaped shell command.
      *
      * @param string $cmd
      *
