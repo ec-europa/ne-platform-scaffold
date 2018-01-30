@@ -19,7 +19,6 @@ use Symfony\Component\Process\Process;
 /**
  * Class Handler
  *
- * @package NextEuropa\PlatformScaffold
  * @SuppressWarnings(PHPMD.ShortVariable)
  */
 class Handler
@@ -108,6 +107,7 @@ class Handler
         if (file_exists(self::PLATFORM_ARTIFACT_FILENAME)) {
             unlink(self::PLATFORM_ARTIFACT_FILENAME);
         }
+
         $remoteFs = new RemoteFilesystem($this->io);
         $url = $this->getUri();
         $remoteFs->copy($url, $url, self::PLATFORM_ARTIFACT_FILENAME);
@@ -126,21 +126,8 @@ class Handler
 
         mkdir($this->options['directories']['build'], 0777, true);
 
-        if (file_exists(basename(self::PLATFORM_ARTIFACT_FILENAME, '.tar.gz').'.zip')) {
-            unlink(basename(self::PLATFORM_ARTIFACT_FILENAME, '.tar.gz').'.zip');
-        }
-
-        $archive = new \PharData(self::PLATFORM_ARTIFACT_FILENAME, \RecursiveDirectoryIterator::SKIP_DOTS);
-        $archive->convertToData(\Phar::ZIP);
-
-        $zip = new \ZipArchive();
-
-        $res = $zip->open(basename(self::PLATFORM_ARTIFACT_FILENAME, '.tar.gz').'.zip');
-
-        if (true === $res) {
-            $zip->extractTo($this->options['directories']['build']);
-            $zip->close();
-        }
+        $command = sprintf('tar -xzvf %s --directory %s', self::PLATFORM_ARTIFACT_FILENAME, $this->options['directories']['build']);
+        $this->executeCommand($command);
     }
 
     /**
@@ -149,7 +136,6 @@ class Handler
     protected function removeArtifactFiles()
     {
         unlink(self::PLATFORM_ARTIFACT_FILENAME);
-        unlink(basename(self::PLATFORM_ARTIFACT_FILENAME, '.tar.gz').'.zip');
     }
 
     /**
@@ -157,9 +143,9 @@ class Handler
      */
     protected function removeDownloadedPatches()
     {
-        foreach (glob($this->buildPath.'/*.patch') as $file) {
+        array_map(function ($file) {
             unlink($file);
-        }
+        }, glob($this->buildPath.'/*.patch'));
     }
 
     /**
@@ -272,7 +258,7 @@ class Handler
     protected function getUri()
     {
         $map = [
-            '{version}' => $this->options['version'],
+        '{version}' => $this->options['version'],
         ];
 
         return str_replace(array_keys($map), array_values($map), $this->options['artifact']['url']);
